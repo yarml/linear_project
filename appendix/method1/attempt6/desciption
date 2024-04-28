@@ -1,0 +1,1 @@
+Half frame 1 added to half inverted frame 2, values clamped to either 255 or 0 if they are above or below 39
