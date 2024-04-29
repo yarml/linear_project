@@ -2,3 +2,5 @@
 *.png
 !appendix/**
 !archive/**
+!frame0.png
+!frame1.png

@@ -2,15 +2,15 @@ import numpy as np
 from PIL import Image
 
 def image_load(path: str) -> np.ndarray:
-  # This would load the image into a tensor where an index [x][y][rgba] would determin
+  # This would load the image into a tensor where an index [y][x][rgba] would determin
   # the RGBA component of the pixel at xy.
-  # We want it a little inversed, we want [rgb][x][y], the color first, each 'frame' of the tensor
+  # We want it a little inversed, we want [rgb][y][x], the color first, each 'frame' of the tensor
   # contains the whole image, so we reorder this tensor
   # A tensor transpose along the Z axis basically
   tensor = np.asarray(Image.open(path))
   return tensor.transpose(2, 0, 1)[:3]
 def image_save(tensor: np.ndarray, path: str):
-  # We need to reorder the tensor back to [x][y][rgba] order.
+  # We need to reorder the tensor back to [y][x][rgba] order.
   Image.fromarray(tensor.transpose(1, 2, 0)).save(path)
 def reduce_to_grayscale(tensor: np.ndarray) -> np.array:
   row = (tensor[0] + tensor[1] + tensor[2]) / 3
@@ -46,5 +46,26 @@ def method1p1():
   frame1 = image_load("frame1.png")
   inv1 = invert(frame1)
   image_save(reduce_to_bin(add(frame0/2, inv1/2), 39), "edge_m1.1.png")
+
+# Method 2: Subtract the image from a shifted version of itself
+def method2():
+  shift_amnt = 1
+  rm_indices = np.concatenate((np.arange(shift_amnt), np.array([-i - 1 for i in range(shift_amnt)])))
+  #print(rm_indices)
+  source = image_load("frame0.png")
+  pshifted = np.roll(source, (shift_amnt, shift_amnt), (1, 2))
+  inv_pshifted = invert(pshifted)
+  # Adding with inverse then removing borders
+  pshift_org = np.delete(np.delete(add(source/2, inv_pshifted/2), rm_indices, 1), rm_indices, 2)
+  nshifted = np.roll(source, (-shift_amnt, -shift_amnt), (1, 2))
+  inv_nshifted = invert(nshifted)
+  nshift_org = np.delete(np.delete(add(source/2, inv_nshifted/2), rm_indices, 1), rm_indices, 2)
+  image_save(pshift_org, "pshift.jpeg")
+  image_save(nshift_org, "nshift.jpeg")
+  output = reduce_to_bin(add(nshift_org, pshift_org), 1)
+  image_save(output, "output.jpeg")
+
+
 #method1()
 #method1p1()
+method2()
