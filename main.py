@@ -56,11 +56,12 @@ def method1p1():
   frame0 = image_load("frame0.png")
   frame1 = image_load("frame1.png")
   inv1 = invert(frame1)
+  image_save(inv1, "inv_frame1.png")
   image_save(reduce_to_bin(add(frame0/2, inv1/2), 39), "edge_m1.1.png")
 
 # Method 2: Subtract the image from a shifted version of itself
 def method2():
-  shift_amnt = 1
+  shift_amnt = 100
   rm_indices = np.concatenate((np.arange(shift_amnt), np.array([-i - 1 for i in range(shift_amnt)])))
   #print(rm_indices)
   source = image_load("frame0.png")
@@ -71,6 +72,7 @@ def method2():
   nshifted = np.roll(source, (-shift_amnt, -shift_amnt), (1, 2))
   inv_nshifted = invert(nshifted)
   nshift_org = np.delete(np.delete(add(source/2, inv_nshifted/2), rm_indices, 1), rm_indices, 2)
+  image_save(inv_pshifted, "pshift.png")
   #image_save(pshift_org, "pshift.jpeg")
   #image_save(nshift_org, "nshift.jpeg")
   output = reduce_to_bin(add(nshift_org, pshift_org), 1)
@@ -79,7 +81,11 @@ def method2():
 def method3():
   source = image_load("frame0.png")
   source = reduce_to_grayscale(source)
-  output = reduce_to_bin(image_convolve(source, np.array([[-0.1, 0, 0.1], [-0.2, 0, 0.2], [-0.1, 0, 0.1]])), 60)
+  ver_output = reduce_to_bin(image_convolve(source, np.array([[-0.1, 0, 0.1], [-0.2, 0, 0.2], [-0.1, 0, 0.1]])), 60)
+  hor_output = reduce_to_bin(image_convolve(source, np.array([[-0.1, -0.2, -0.1], [0, 0, 0], [0.1, 0.2, 0.1]])), 60)
+  output = ver_output + hor_output
+  image_save(ver_output, "ver_output.jpeg")
+  image_save(hor_output, "hor_output.jpeg")
   image_save(output, "output.jpeg")
 
 #method1()
